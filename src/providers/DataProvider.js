@@ -425,7 +425,6 @@ const DataProvider = ({children}) => {
         let MISAppsSuccessors = [];   // future MIS apps with their legacy app and projects
         let MISAppsStandalone = [];    // current MIS apps with their projects
         const { MISApps, pairing, standalone } = getMISApps(applications);
-        console.log(standalone);
 
         // sort the MIS apps into their relations with each other
         pairing.forEach(pair => {
@@ -463,12 +462,15 @@ const DataProvider = ({children}) => {
         let pairing = []; // modern MIS apps with paired with their successor
         let standalone = []; // MIS apps not a successor to a legacy app
 
+        // get all MIS app
         applications.forEach(app => {
-            // get apps with MIS tag
             if (app.majorInformationSystemsTag === 'Major Information Systems') {
                 MISApps.push(app);  // add to collection of apps with the MIS tag
                 standalone.push(app);
             }
+        })
+
+        applications.forEach(app => {
             // get apps that are either the legacy or modernization app
             if (app.successors) {
                 applications.forEach(modern => {
@@ -479,12 +481,22 @@ const DataProvider = ({children}) => {
                         // remove legacy modern pairs
                         standalone = _.filter(standalone, s => s.name !== modern.name);
                         standalone = _.filter(standalone, s => s.name !== app.name);
-                    }        
+                    }
+                    
+                    if ((app.majorInformationSystemsTag === 'Major Information Systems') && (modern.name === app.successors)) {
+                        modernApps.push(modern);
+                        legacyApps.push(app);
+
+                        // remove legacy modern pairs
+                        standalone = _.filter(standalone, s => s.name !== modern.name);
+                        standalone = _.filter(standalone, s => s.name !== app.name);
+                    }
                 });
             }
         });
 
         modernApps = _.uniq(modernApps);
+        legacyApps = _.uniq(legacyApps);
 
         // build the modern-legacy pairing
         modernApps.forEach(app => {
